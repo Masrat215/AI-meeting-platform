@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Upload Audio for Phase 5 Test</h2>
+  <form action="http://localhost:5000/api/meetings/upload" method="post" enctype="multipart/form-data">
+    Title: <input type="text" name="title" value="Test Transcription"><br><br>
+    Audio File: <input type="file" name="audio" accept="audio/*"><br><br>
+    <button type="submit">Upload</button>
+  </form>
+</body>
+</html>

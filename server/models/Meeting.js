@@ -18,6 +18,7 @@ const meetingSchema = new mongoose.Schema(
       default: "uploaded",
     },
     createdBy: { type: String, default: "Guest" },
+       errorMessage: { type: String },
   },
   { timestamps: true }
 );
