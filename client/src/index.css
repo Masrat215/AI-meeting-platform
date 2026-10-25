@@ -3,7 +3,7 @@
      --card: #ffffff;
      --text: #1f2430;
      --muted: #6b7280;
-     --primary: #4f46e5;
+     --primary: #1e3a8a;
      --border: #e5e7eb;
    }
 
@@ -264,4 +264,23 @@
      background: #ffffff;
      color: #b91c1c;
      border: 1px solid #fca5a5;
+   }
+   
+   /* ---------- ScribWave logo ---------- */
+   .logo {
+     display: inline-flex;
+     align-items: center;
+     gap: 10px;
+   }
+   .logo svg {
+     flex-shrink: 0;
+   }
+   .logo-text {
+     font-size: 1.3rem;
+     font-weight: 800;
+     letter-spacing: -0.02em;
+     color: #0b1f4b;
+   }
+   .logo-wave {
+     color: #0284c7;
    }
