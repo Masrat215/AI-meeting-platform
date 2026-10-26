@@ -2,6 +2,8 @@
 
    const meetingSchema = new mongoose.Schema(
      {
+       // The user who uploaded this meeting
+       owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
        title: { type: String, required: true, trim: true },
        originalFileName: { type: String },
        audioFilePath: { type: String },
@@ -17,7 +19,7 @@
          ],
          default: "uploaded",
        },
-              createdBy: { type: String, default: "Guest" },
+       createdBy: { type: String, default: "Guest" },
        errorMessage: { type: String },
      },
      { timestamps: true }

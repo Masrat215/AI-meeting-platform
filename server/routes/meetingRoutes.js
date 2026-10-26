@@ -2,6 +2,8 @@
    const fs = require("fs");
    const mongoose = require("mongoose");
    const upload = require("../middleware/upload");
+   const requireAuth = require("../middleware/auth");
+   const checkUploadLimit = require("../middleware/uploadLimit");
    const Meeting = require("../models/Meeting");
    const Transcript = require("../models/Transcript");
    const Summary = require("../models/Summary");
@@ -9,38 +11,53 @@
 
    const router = express.Router();
 
-   // True when the text looks like a valid MongoDB ID
+   // Every route below needs a logged-in user
+   router.use(requireAuth);
+
    const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+   // Finds a meeting only if it belongs to the logged-in user
+   const findOwnMeeting = (req) => {
+     if (!isValidId(req.params.id)) return null;
+     return Meeting.findOne({ _id: req.params.id, owner: req.user._id });
+   };
+
    // POST /api/meetings/upload -> receive audio, create meeting, start processing
-   router.post("/upload", upload.single("audio"), async (req, res) => {
-     try {
-       if (!req.file) {
-         return res.status(400).json({ error: "Please attach an audio file" });
+   router.post(
+     "/upload",
+     checkUploadLimit,
+     upload.single("audio"),
+     async (req, res) => {
+       try {
+         if (!req.file) {
+           return res.status(400).json({ error: "Please attach an audio file" });
+         }
+
+         const title = (req.body && req.body.title) || req.file.originalname;
+
+         const meeting = await Meeting.create({
+           owner: req.user._id,
+           title,
+           originalFileName: req.file.originalname,
+           audioFilePath: req.file.path,
+         });
+
+         // Reply straight away; the processing continues in the background
+         res.status(201).json({ message: "Audio uploaded successfully", meeting });
+
+         processMeeting(meeting._id);
+       } catch (error) {
+         res.status(500).json({ error: error.message });
        }
-
-       const title = req.body.title || req.file.originalname;
-
-       const meeting = await Meeting.create({
-         title,
-         originalFileName: req.file.originalname,
-         audioFilePath: req.file.path,
-         createdBy: req.body.createdBy || "Guest",
-       });
-
-       // Reply straight away; the processing continues in the background
-       res.status(201).json({ message: "Audio uploaded successfully", meeting });
-
-       processMeeting(meeting._id);
-     } catch (error) {
-       res.status(500).json({ error: error.message });
      }
-   });
+   );
 
-   // GET /api/meetings -> list all meetings, newest first
+   // GET /api/meetings -> the user's meetings, newest first
    router.get("/", async (req, res) => {
      try {
-       const meetings = await Meeting.find().sort({ createdAt: -1 });
+       const meetings = await Meeting.find({ owner: req.user._id }).sort({
+         createdAt: -1,
+       });
        res.json(meetings);
      } catch (error) {
        res.status(500).json({ error: error.message });
@@ -50,11 +67,7 @@
    // GET /api/meetings/:id -> one meeting with its transcript and summary
    router.get("/:id", async (req, res) => {
      try {
-       if (!isValidId(req.params.id)) {
-         return res.status(404).json({ error: "Meeting not found" });
-       }
-
-       const meeting = await Meeting.findById(req.params.id);
+       const meeting = await findOwnMeeting(req);
        if (!meeting) {
          return res.status(404).json({ error: "Meeting not found" });
        }
@@ -71,11 +84,7 @@
    // POST /api/meetings/:id/retry -> run a failed meeting again from the start
    router.post("/:id/retry", async (req, res) => {
      try {
-       if (!isValidId(req.params.id)) {
-         return res.status(404).json({ error: "Meeting not found" });
-       }
-
-       const meeting = await Meeting.findById(req.params.id);
+       const meeting = await findOwnMeeting(req);
        if (!meeting) {
          return res.status(404).json({ error: "Meeting not found" });
        }
@@ -86,11 +95,11 @@
 
        if (!meeting.audioFilePath || !fs.existsSync(meeting.audioFilePath)) {
          return res.status(400).json({
-           error: "The audio file is no longer on the server. Please upload the recording again.",
+           error:
+             "The audio file is no longer on the server. Please upload the recording again.",
          });
        }
 
-       // Clear any partial results, then start again
        await Transcript.deleteMany({ meetingId: meeting._id });
        await Summary.deleteMany({ meetingId: meeting._id });
 
@@ -109,16 +118,11 @@
    // DELETE /api/meetings/:id -> remove a meeting, its results and its audio file
    router.delete("/:id", async (req, res) => {
      try {
-       if (!isValidId(req.params.id)) {
-         return res.status(404).json({ error: "Meeting not found" });
-       }
-
-       const meeting = await Meeting.findById(req.params.id);
+       const meeting = await findOwnMeeting(req);
        if (!meeting) {
          return res.status(404).json({ error: "Meeting not found" });
        }
 
-       // Delete the audio file too (ignore the error if it is already gone)
        if (meeting.audioFilePath) {
          await fs.promises.unlink(meeting.audioFilePath).catch(() => {});
        }
