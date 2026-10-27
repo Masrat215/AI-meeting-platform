@@ -4,6 +4,7 @@
    import { Menu } from "lucide-react";
    import Sidebar from "./Sidebar";
    import ThemeToggle from "./ThemeToggle";
+      import UserMenu from "./UserMenu";
    import Logo from "./Logo";
 
    function AppLayout() {
@@ -15,7 +16,7 @@
          <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
          <div className="lg:pl-64">
-           <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/80 px-4 backdrop-blur">
+           <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/80 px-4 backdrop-blur-sm">
              <button
                type="button"
                onClick={() => setMenuOpen(true)}
@@ -27,9 +28,12 @@
              <div className="lg:hidden">
                <Logo size={30} />
              </div>
-             <div className="ml-auto flex items-center gap-2">
-               <ThemeToggle />
-             </div>
+                <div className="ml-auto flex items-center gap-2">
+     <ThemeToggle />
+     <UserMenu />
+   </div>
+               
+             
            </header>
 
            <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">

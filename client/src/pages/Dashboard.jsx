@@ -39,7 +39,7 @@
        <div>
          <div className="page-header">
            <h1>Your Meetings</h1>
-           <Link to="/upload" className="btn">
+           <Link to="/app/meetings/new" className="btn">
              + Upload recording
            </Link>
          </div>

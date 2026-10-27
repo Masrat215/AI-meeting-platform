@@ -67,7 +67,7 @@
          setBusy(true);
          setActionError("");
          await api.delete(`/api/meetings/${id}`);
-         navigate("/");
+         navigate("/app");
        } catch (err) {
          setActionError(err.response?.data?.error || "Could not delete this meeting.");
          setBusy(false);
@@ -79,7 +79,7 @@
          <div>
            <p className="error-box">{error}</p>
            <p>
-             <Link to="/" className="back">
+             <Link to="/app" className="back">
                ← Back to dashboard
              </Link>
            </p>
@@ -95,7 +95,7 @@
 
      return (
        <div>
-         <Link to="/" className="back">
+         <Link to="/app" className="back">
            ← Back to dashboard
          </Link>
 

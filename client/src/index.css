@@ -39,25 +39,26 @@
      -webkit-font-smoothing: antialiased;
      transition: background-color 0.25s ease, color 0.25s ease;
    }
-   h1,
-   h2,
-   h3 {
-     font-family: var(--font-display);
+      @layer base {
+     h1,
+     h2,
+     h3 {
+       font-family: var(--font-display);
+     }
+     h1 {
+       font-size: 1.6rem;
+       font-weight: 800;
+       letter-spacing: -0.02em;
+     }
+     h2 {
+       font-size: 1.15rem;
+       font-weight: 700;
+       margin-bottom: 0.6rem;
+     }
+     h3 {
+       font-weight: 700;
+     }
    }
-   h1 {
-     font-size: 1.6rem;
-     font-weight: 800;
-     letter-spacing: -0.02em;
-   }
-   h2 {
-     font-size: 1.15rem;
-     font-weight: 700;
-     margin-bottom: 0.6rem;
-   }
-   h3 {
-     font-weight: 700;
-   }
-
    /* ---------- Old page styles, adapted for dark mode ----------
       We replace these with Tailwind classes page by page in Stage E. */
    @layer components {

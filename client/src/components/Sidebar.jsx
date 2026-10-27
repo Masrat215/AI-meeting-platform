@@ -4,10 +4,10 @@
    import Logo from "./Logo";
 
    const LINKS = [
-     { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-     { to: "/upload", label: "New meeting", icon: Upload },
-     { to: "/design", label: "Design preview", icon: Palette },
-   ];
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/app/meetings/new", label: "New meeting", icon: Upload },
+  { to: "/app/design", label: "Design preview", icon: Palette },
+];
 
    function NavItems({ onNavigate }) {
      return (

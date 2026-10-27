@@ -1,6 +1,6 @@
 import { useId } from "react";
 
-function Logo({ size = 36, showText = true }) {
+function Logo({ size = 36, showText = true, light = false }) {
   // A unique id per logo, so several logos on one page never clash
   const gradientId = "sw" + useId().replace(/[^a-zA-Z0-9]/g, "");
 
@@ -38,8 +38,12 @@ function Logo({ size = 36, showText = true }) {
       </svg>
 
       {showText && (
-        <span className="font-display text-[1.3rem] font-extrabold tracking-tight text-ink">
-          Scrib<span className="text-wave">Wave</span>
+        <span
+          className={`font-display text-[1.3rem] font-extrabold tracking-tight ${
+            light ? "text-white" : "text-ink"
+          }`}
+        >
+          Scrib<span className={light ? "text-cyan-300" : "text-wave"}>Wave</span>
         </span>
       )}
     </span>
