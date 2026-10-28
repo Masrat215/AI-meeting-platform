@@ -31,7 +31,7 @@
          setError("");
          const response = await api.post("/api/meetings/upload", formData);
          // Go straight to the new meeting's page to watch the progress
-         navigate(`/meetings/${response.data.meeting._id}`);
+            navigate(`/app/meetings/${response.data.meeting._id}`);
        } catch (err) {
          setError(
            err.response?.data?.error || "Upload failed. Is the backend server running?"
