@@ -5,33 +5,58 @@
    const User = require("../models/User");
 
    const run = async () => {
-     const [action, email, newPassword] = process.argv.slice(2);
+     const [action, email, password] = process.argv.slice(2);
 
-     if (!["check", "reset"].includes(action) || !email) {
+     if (!["check", "verify", "reset"].includes(action) || !email) {
        console.log("Usage:");
        console.log("  node scripts/accountTool.js check your@email.com");
-       console.log("  node scripts/accountTool.js reset your@email.com NewPassword123");
+       console.log("  node scripts/accountTool.js verify your@email.com 'YourPassword'");
+       console.log("  node scripts/accountTool.js reset your@email.com 'NewPassword123'");
        return;
      }
 
      await connectDB();
-     console.log(`Database: ${mongoose.connection.name}`);
-     console.log(`Accounts in this database: ${await User.countDocuments()}`);
 
-     const user = await User.findOne({ email: email.trim().toLowerCase() });
-     console.log(user ? `Account found: ${user.email}` : "No account with that email");
+     try {
+       console.log(`Database host: ${mongoose.connection.host}`);
+       console.log(`Database name: ${mongoose.connection.name}`);
+       console.log(`Accounts in this database: ${await User.countDocuments()}`);
 
-     if (action === "reset" && user) {
-       if (!newPassword || newPassword.length < 8) {
-         console.log("The new password must be at least 8 characters.");
-       } else {
-         user.passwordHash = await bcrypt.hash(newPassword, 10);
-         await user.save();
-         console.log("Password updated. You can log in with the new password.");
+       const latest = await User.find()
+         .sort({ createdAt: -1 })
+         .limit(5)
+         .select("email createdAt");
+       console.log("Latest accounts:");
+       latest.forEach((u) => console.log(`  ${u.email}  (${u.createdAt.toISOString()})`));
+
+       const user = await User.findOne({ email: email.trim().toLowerCase() });
+       if (!user) {
+         console.log("\nRESULT: no account with that email in THIS database");
+         return;
        }
-     }
+       console.log(`\nRESULT: account found (${user.email})`);
 
-     await mongoose.connection.close();
+       if (action === "verify") {
+         const ok = await bcrypt.compare(password || "", user.passwordHash);
+         console.log(
+           ok
+             ? "RESULT: the password MATCHES"
+             : "RESULT: the password does NOT match"
+         );
+       }
+
+       if (action === "reset") {
+         if (!password || password.length < 8) {
+           console.log("The new password must be at least 8 characters.");
+         } else {
+           user.passwordHash = await bcrypt.hash(password, 10);
+           await user.save();
+           console.log("Password updated.");
+         }
+       }
+     } finally {
+       await mongoose.connection.close();
+     }
    };
 
    run();

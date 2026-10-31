@@ -136,5 +136,42 @@
        res.status(500).json({ error: error.message });
      }
    });
+   // PATCH /api/meetings/:id/speakers -> set or clear the real name of one speaker
+   router.patch("/:id/speakers", async (req, res) => {
+     try {
+       const meeting = await findOwnMeeting(req);
+       if (!meeting) {
+         return res.status(404).json({ error: "Meeting not found" });
+       }
 
+       const label = String((req.body && req.body.label) || "")
+         .trim()
+         .toUpperCase();
+       const name = String((req.body && req.body.name) || "").trim();
+
+       if (!/^[A-Z]$/.test(label)) {
+         return res.status(400).json({ error: "Invalid speaker" });
+       }
+       if (name.length > 40) {
+         return res
+           .status(400)
+           .json({ error: "Names can be up to 40 characters long" });
+       }
+
+       const summary = await Summary.findOne({ meetingId: meeting._id });
+       if (!summary) {
+         return res
+           .status(400)
+           .json({ error: "Speaker names can be edited once the summary is ready" });
+       }
+
+       const others = summary.speakers.filter((s) => s.label !== label);
+       summary.speakers = name ? [...others, { label, name }] : others;
+       await summary.save();
+
+       res.json({ summary });
+     } catch (error) {
+       res.status(500).json({ error: error.message });
+     }
+   });
    module.exports = router;

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router";
+import { Navigate, Routes, Route, useParams } from "react-router";
 import { Toaster } from "sonner";
 import { useTheme } from "./context/ThemeContext";
 import AppLayout from "./components/AppLayout";
@@ -12,6 +12,12 @@ import MeetingDetail from "./pages/MeetingDetail";
 import DesignPreview from "./pages/DesignPreview";
 import NotFound from "./pages/NotFound";
 
+// Old links such as /meetings/123 now live under /app
+function OldMeetingRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/app/meetings/${id}`} replace />;
+}
+
 function App() {
   const { theme } = useTheme();
 
@@ -21,6 +27,8 @@ function App() {
       <Routes>
         {/* Open to everyone */}
         <Route path="/" element={<Landing />} />
+        <Route path="/upload" element={<Navigate to="/app/meetings/new" replace />} />
+        <Route path="/meetings/:id" element={<OldMeetingRedirect />} />
 
         {/* Only for visitors who are not logged in */}
         <Route element={<PublicOnlyRoute />}>

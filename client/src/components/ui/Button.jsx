@@ -24,7 +24,7 @@
        <motion.button
          whileHover={{ y: -1 }}
          whileTap={{ scale: 0.97 }}
-         style={{ ...VARIANT_STYLES[variant], ...style }}
+         style={{ ...VARIANT_STYLES  dangerSolid: "bg-red-600 text-white hover:bg-red-700",}}
          className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
          {...props}
        >

@@ -2,7 +2,7 @@
    const express = require("express");
    const cors = require("cors");
    const helmet = require("helmet");
-   const connectDB = require("./db");
+   const connectDB = require("./db");const Meeting = require("./models/Meeting");
    const authRoutes = require("./routes/authRoutes");
    const meetingRoutes = require("./routes/meetingRoutes");
 
@@ -43,8 +43,38 @@
 
    const PORT = process.env.PORT || 5000;
 
-   connectDB().then(() => {
-     app.listen(PORT, () => {
-       console.log(`Server running on port ${PORT}`);
-     });
-   });
+
+
+// A meeting still "processing" after 15 minutes can never finish (for example
+// because the server restarted). Mark it as failed so it does not stay stuck.
+const STALE_AFTER_MS = 15 * 60 * 1000;
+
+const failStaleMeetings = async () => {
+  try {
+    const result = await Meeting.updateMany(
+      {
+        status: { $in: ["uploaded", "transcribing", "transcribed", "summarizing"] },
+        updatedAt: { $lt: new Date(Date.now() - STALE_AFTER_MS) },
+      },
+      {
+        status: "failed",
+        errorMessage:
+          "Processing was interrupted, for example by a server restart. Please upload the recording again.",
+      }
+    );
+    if (result.modifiedCount > 0) {
+      console.log(`Marked ${result.modifiedCount} stuck meetings as failed`);
+    }
+  } catch (error) {
+    console.error("Stuck meeting check failed:", error.message);
+  }
+};
+
+connectDB().then(() => {
+  failStaleMeetings();
+  setInterval(failStaleMeetings, 5 * 60 * 1000);
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+});

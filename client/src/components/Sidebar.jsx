@@ -1,12 +1,12 @@
    import { NavLink } from "react-router";
    import { AnimatePresence, motion } from "motion/react";
-   import { LayoutDashboard, Palette, Upload, X } from "lucide-react";
+   import { LayoutDashboard, Upload, X } from "lucide-react";
    import Logo from "./Logo";
 
    const LINKS = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/app/meetings/new", label: "New meeting", icon: Upload },
-  { to: "/app/design", label: "Design preview", icon: Palette },
+  
 ];
 
    function NavItems({ onNavigate }) {
