@@ -9,7 +9,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import MeetingDetail from "./pages/MeetingDetail";
-import DesignPreview from "./pages/DesignPreview";
+import Tasks from "./pages/Tasks";
 import NotFound from "./pages/NotFound";
 
 // Old links such as /meetings/123 now live under /app
@@ -42,7 +42,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="meetings/new" element={<Upload />} />
             <Route path="meetings/:id" element={<MeetingDetail />} />
-            <Route path="design" element={<DesignPreview />} />
+            <Route path="tasks" element={<Tasks />} />
           </Route>
         </Route>
 
