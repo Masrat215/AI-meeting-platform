@@ -22,6 +22,8 @@ const summarySchema = new mongoose.Schema(
         assignee: { type: String, default: "Unassigned" },
         deadline: { type: String, default: "Not specified" },
         completed: { type: Boolean, default: false },
+        // When the task was ticked off (used later for analytics)
+        completedAt: { type: Date, default: null },
       },
     ],
   },

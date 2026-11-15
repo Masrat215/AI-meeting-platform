@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
 import { toast } from "sonner";
@@ -12,13 +12,14 @@ import {
   RotateCcw,
   Sparkles,
   Trash2,
-  User,
 } from "lucide-react";
 import api from "../api";
 import Button from "../components/ui/Button";
 import Skeleton from "../components/ui/Skeleton";
 import ConfirmDialog from "../components/ConfirmDialog";
+import ActionItemCard from "../components/ActionItemCard";
 import PipelineStepper from "../components/PipelineStepper";
+import ProgressBar from "../components/ProgressBar";
 import SectionHeader from "../components/SectionHeader";
 import SpeakerChips from "../components/SpeakerChips";
 import StatusBadge from "../components/StatusBadge";
@@ -42,6 +43,7 @@ function MeetingDetail() {
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const pendingActions = useRef(new Set());
 
   const loadMeeting = async () => {
     try {
@@ -104,6 +106,37 @@ function MeetingDetail() {
     }
   };
 
+  // Tick or untick an action item. The change shows at once and is undone
+  // if the server cannot save it.
+  const toggleAction = async (item) => {
+    if (!item._id || pendingActions.current.has(item._id)) return;
+    pendingActions.current.add(item._id);
+
+    const next = !item.completed;
+    const setCompleted = (value) =>
+      setData((current) => ({
+        ...current,
+        summary: {
+          ...current.summary,
+          actionItems: current.summary.actionItems.map((entry) =>
+            entry._id === item._id ? { ...entry, completed: value } : entry
+          ),
+        },
+      }));
+
+    setCompleted(next);
+    try {
+      await api.patch(`/api/meetings/${id}/actions/${item._id}`, {
+        completed: next,
+      });
+    } catch (err) {
+      setCompleted(!next);
+      toast.error(err.response?.data?.error || "Could not update this task.");
+    } finally {
+      pendingActions.current.delete(item._id);
+    }
+  };
+
   if (!data) {
     if (error) {
       return (
@@ -134,6 +167,9 @@ function MeetingDetail() {
   const segments = transcript?.speakerSegments || [];
   const labels = [...new Set(segments.map((segment) => segment.speaker))].sort();
   const sentences = splitSentences(summary?.summaryText);
+  const doneCount = (summary?.actionItems || []).filter(
+    (item) => item.completed
+  ).length;
   const working = !isFinished(meeting.status);
   const stuck =
     working && Date.now() - new Date(meeting.updatedAt).getTime() > STUCK_AFTER_MS;
@@ -270,44 +306,19 @@ function MeetingDetail() {
                 No action items were found in this meeting.
               </p>
             ) : (
-              <ul className="space-y-3">
-                {summary.actionItems.map((item, index) => (
-                  <motion.li
-                    key={item._id || index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.07 }}
-                    className="flex flex-col gap-3 rounded-xl border border-line bg-canvas p-4 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700 dark:bg-teal-500/20 dark:text-teal-200">
-                        {index + 1}
-                      </span>
-                      <p className="font-medium leading-snug">{item.task}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 sm:justify-end">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                          item.assignee === "Unassigned"
-                            ? "bg-surface-2 text-muted"
-                            : "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-200"
-                        }`}
-                      >
-                        <User size={13} /> {item.assignee}
-                      </span>
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                          item.deadline === "Not specified"
-                            ? "bg-surface-2 text-muted"
-                            : "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200"
-                        }`}
-                      >
-                        <CalendarClock size={13} /> {item.deadline}
-                      </span>
-                    </div>
-                  </motion.li>
-                ))}
-              </ul>
+              <>
+                <ProgressBar done={doneCount} total={summary.actionItems.length} />
+                <ul className="space-y-3">
+                  {summary.actionItems.map((item, index) => (
+                    <ActionItemCard
+                      key={item._id || index}
+                      item={item}
+                      index={index}
+                      onToggle={() => toggleAction(item)}
+                    />
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         </section>
