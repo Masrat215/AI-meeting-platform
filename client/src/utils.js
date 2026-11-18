@@ -38,3 +38,16 @@ export const splitSentences = (text = "") =>
   (text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [])
     .map((sentence) => sentence.trim())
     .filter(Boolean);
+
+// 125000 (milliseconds)  ->  "2m 05s"      4500000  ->  "1h 15m"      30000  ->  "30s"
+export const formatDuration = (ms = 0) => {
+  const totalSeconds = Math.round(ms / 1000);
+  if (totalSeconds < 60) return `${totalSeconds}s`;
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+};

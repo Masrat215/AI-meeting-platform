@@ -1,17 +1,18 @@
 import { NavLink } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { LayoutDashboard, ListChecks, Upload, X } from "lucide-react";
+import { LayoutDashboard, ListChecks, TrendingUp, Upload, X } from "lucide-react";
 import Logo from "./Logo";
 
 const LINKS = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/app/meetings/new", label: "New meeting", icon: Upload },
   { to: "/app/tasks", label: "Tasks", icon: ListChecks },
+  { to: "/app/analytics", label: "Analytics", icon: TrendingUp },
 ];
 
 function NavItems({ onNavigate }) {
   return (
-    <nav className="flex flex-col gap-1 px-3">
+    <nav aria-label="Main menu" className="flex flex-col gap-1 px-3">
       {LINKS.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}

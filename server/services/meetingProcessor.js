@@ -26,8 +26,18 @@ const processMeeting = async (meetingId) => {
     }));
     const fullText = result.text || "";
 
+    // Length of the recording: AssemblyAI gives it in seconds. If it is missing,
+    // use the end of the last spoken part instead.
+    const lastSegmentEnd = speakerSegments.reduce(
+      (max, segment) => Math.max(max, segment.end || 0),
+      0
+    );
+    const durationMs = result.audio_duration
+      ? Math.round(result.audio_duration * 1000)
+      : lastSegmentEnd;
+
     await Transcript.create({ meetingId, fullText, speakerSegments });
-    await Meeting.findByIdAndUpdate(meetingId, { status: "transcribed" });
+    await Meeting.findByIdAndUpdate(meetingId, { status: "transcribed", durationMs });
     console.log(`Meeting ${meetingId} transcribed`);
 
     // ---- Part 2: summary, action items and speaker names ----

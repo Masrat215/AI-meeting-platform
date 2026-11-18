@@ -1,0 +1,41 @@
+/* Accessibility helpers (plain CSS, no Tailwind needed) */
+
+/* A clear outline for people who move around with the keyboard */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible,
+[role="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-brand-text, #1e3a8a);
+  outline-offset: 2px;
+}
+
+/* "Skip to main content" link: hidden until it gets keyboard focus */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--color-brand, #1e3a8a);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.skip-link:focus {
+  left: 12px;
+}
+
+/* People who ask their computer for less motion get almost no animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
